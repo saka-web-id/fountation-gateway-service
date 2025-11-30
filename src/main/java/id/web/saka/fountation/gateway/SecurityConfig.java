@@ -19,9 +19,8 @@ public class SecurityConfig {
                         .pathMatchers("/health").permitAll()
                         .pathMatchers("/login").permitAll()
                         .pathMatchers("/oauth2/**").permitAll()
-                        .pathMatchers("/login**").permitAll()
                         .pathMatchers("/public/**").permitAll()
-                        .pathMatchers("/user/**").permitAll()
+                        /*.pathMatchers("/user/**").permitAll()*/
                         .anyExchange().authenticated()
                 )
                 .oauth2Login(Customizer.withDefaults())
