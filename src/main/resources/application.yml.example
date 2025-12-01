@@ -28,29 +28,45 @@ spring:
   security:
     oauth2:
       client:
-        provider:
-          spring:
-            authorization-uri: http://localhost:9000/oauth2/authorize
-            token-uri: http://localhost:9000/oauth2/token
-            user-info-uri: http://localhost:9000/userinfo
-            jwk-set-uri: http://localhost:9000/oauth2/jwks
         registration:
-          internal-auth-server:
+          # A unique identifier for your client registration (e.g., 'internal-auth-server')
+          auth0:
+            client-id: XXXXXXXXXXXXXXXX # Must be registered in your Auth Server DB/config
+            client-secret: XXXXXXXXXXXXXXXXXXXXXXXXXX  # Must match what's in your Auth Server DB/config
             authorization-grant-type: authorization_code
-            client-id: "fountation-authorization-service-id"
-            client-name: "fountation-authorization-service-oidc"
-            client-secret: "fountation-authorization-service-secret"
-            client-authentication-method: client_secret_basic
-            redirect-uri: "http://localhost:8080/authorized"
-            scope: openid
-            provider: spring
-      resourceserver:
+            redirect-uri: http://localhost:8080/login/oauth2/code/auth0
+            scope: openid,profile,email
+            provider: auth0
+            client-name: Auth0
+        provider:
+          # Matches the registration ID above
+          auth0:
+            # Point this to the base URL of your OWN Spring Authorization Server application
+            #issuer-uri: https://dev-XXXXXXXXX.us.auth0.com/
+            authorization-uri: https://dev-XXXXXXXXXXXX.us.auth0.com/authorize?audience=https://dev-XXXXXXXXXXXXX.us.auth0.com/api/v2/
+            token-uri: https://dev-XXXXXXXXXXXXX.us.auth0.com/oauth/token
+            user-info-uri: https://dev-XXXXXXXXXXXX.us.auth0.com/userinfo
+            jwk-set-uri: https://dev-XXXXXXXXXXXX.us.auth0.com/.well-known/jwks.json
+            issuer-uri: https://dev-XXXXXXXXXXXXXXXX.us.auth0.com/
+      resource-server:
         jwt:
-          jwk-set-uri: http://localhost:9000
+          # Spring Security automatically appends /.well-known/openid-configuration
+          # to this URI to discover the JWK set URI needed for validation
+          issuer-uri: https://dev-XXXXXXXXXXXXXXX.us.auth0.com/
+          audiences:
+            - https://dev-XXXXXXXXXXXXXX.us.auth0.com/api/v2/
 logging:
   level:
     org:
       springframework:
         security:
-          oauth2: TRACE
-    org.springframework.security.web.server.util.matcher: INFO
+          oauth2:
+            client: DEBUG
+        web:
+          reactive:
+            function:
+              client:
+                ExchangeFunctions: DEBUG
+          server:
+            util:
+              matcher: INFO
