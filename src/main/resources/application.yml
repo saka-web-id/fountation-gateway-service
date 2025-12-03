@@ -1,20 +1,29 @@
 server:
   port: 8080
+  address: www.myproject.local
+  reactive:
+    session:
+      cookie:
+        secure: false       # requires HTTPS in production. Note: secure: true requires HTTPS. For local dev, you may temporarily set secure: false.
+        http-only: true    # prevents JS access
+        domain: myproject.local
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka # Replace with your Eureka server address
+      defaultZone: http://www.myproject.local:8761/eureka # Replace with your Eureka server address
     fetchRegistry: true
     registerWithEureka: false # Gateway typically doesn't need to register itself if it's only consuming services
   instance:
     preferIpAddress: true # Optional: prefer IP address over hostname for registration
 spring:
   application:
-      name: fountation-gateway-service
+    name: fountation-gateway-service
   main:
     web-application-type: reactive
   cloud:
     gateway:
+      default-filters:
+        - TokenRelay
       routes:
         - id: fountation-user-service
           uri: lb://fountation-user-service # MY-SERVICE-ID is the application name of your microservice in Eureka
@@ -23,31 +32,65 @@ spring:
           filters:
             - RemoveRequestHeader=favicon.ico
             - RemoveRequestHeader=default-ui.css
+      globalcors:
+        corsConfigurations:
+          '[/**]': # Apply CORS to all routes
+            allowedOrigins:
+              - "http://www.myproject.local:5173"  # Your frontend origin(s)
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - Content-Type
+              - Authorization
+              - X-Requested-With
+            allowCredentials: true
+            maxAge: 3600
   security:
     oauth2:
       client:
-        provider:
-          spring:
-            authorization-uri: http://localhost:9000/oauth2/authorize
-            token-uri: http://localhost:9000/oauth2/token
-            user-info-uri: http://localhost:9000/userinfo
-            jwk-set-uri: http://localhost:9000/oauth2/jwks
         registration:
-          internal-auth-server:
+          # A unique identifier for your client registration (e.g., 'internal-auth-server')
+          auth0:
+            client-id: dZx3KR5B4kOmVuAZHlhvWeaxzW8pzMuL # Must be registered in your Auth Server DB/config
+            client-secret: RiPWe9fnmHV89qD3r7jiHWW-z3bRUqyywgw-XK9jpdGFsPCfwK3HkzSq5Cz6dl2X  # Must match what's in your Auth Server DB/config
             authorization-grant-type: authorization_code
-            client-id: "fountation-authorization-service-id"
-            client-name: "API Gateway Client"
-            client-secret: "{noop}fountation-authorization-service-secret"
-            redirect-uri: 'http://localhost:9000/login/oauth2/code/{registrationId}'
-            scope: openid, profile, accounts.read
-            provider: spring
-      resourceserver:
+            redirect-uri: http://www.myproject.local:8080/login/oauth2/code/auth0
+            scope: openid,profile,email
+            provider: auth0
+            client-name: Auth0
+        provider:
+          # Matches the registration ID above
+          auth0:
+            # Point this to the base URL of your OWN Spring Authorization Server application
+            #issuer-uri: https://dev-XXXXXXXXX.us.auth0.com/
+            authorization-uri: https://dev-exr5y1l2da5165a8.us.auth0.com/authorize?audience=https://dev-exr5y1l2da5165a8.us.auth0.com/api/v2/
+            token-uri: https://dev-exr5y1l2da5165a8.us.auth0.com/oauth/token
+            user-info-uri: https://dev-exr5y1l2da5165a8.us.auth0.com/userinfo
+            jwk-set-uri: https://dev-exr5y1l2da5165a8.us.auth0.com/.well-known/jwks.json
+            issuer-uri: https://dev-exr5y1l2da5165a8.us.auth0.com/
+      resource-server:
         jwt:
-          jwk-set-uri: http://localhost:9000/oauth2/jwks
+          # Spring Security automatically appends /.well-known/openid-configuration
+          # to this URI to discover the JWK set URI needed for validation
+          issuer-uri: https://dev-exr5y1l2da5165a8.us.auth0.com/
+          audiences:
+            - https://dev-exr5y1l2da5165a8.us.auth0.com/api/v2/
 logging:
   level:
     org:
       springframework:
-        security: debug
-    org.springframework.security.web.server.util.matcher: INFO
-
+        security:
+          oauth2:
+            client: DEBUG
+        web:
+          reactive:
+            function:
+              client:
+                ExchangeFunctions: DEBUG
+          server:
+            util:
+              matcher: INFO
