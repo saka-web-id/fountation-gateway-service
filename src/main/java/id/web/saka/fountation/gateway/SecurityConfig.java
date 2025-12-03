@@ -18,6 +18,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/health").permitAll()
                         .pathMatchers("/login").permitAll()
+                        .pathMatchers("/user/registration/**").permitAll()
                         .pathMatchers("/oauth2/**").permitAll()
                         .pathMatchers("/public/**").permitAll()
                         /*.pathMatchers("/user/**").permitAll()*/
