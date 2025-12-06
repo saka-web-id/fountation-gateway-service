@@ -3,6 +3,7 @@ package id.web.saka.fountation.gateway;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -20,7 +21,6 @@ public class SecurityConfig {
                         .pathMatchers("/login").permitAll()
                         .pathMatchers("/oauth2/**").permitAll()
                         .pathMatchers("/public/**").permitAll()
-                        /*.pathMatchers("/user/**").permitAll()*/
                         .anyExchange().authenticated()
                 )
                 .oauth2Login(Customizer.withDefaults())
@@ -29,6 +29,13 @@ public class SecurityConfig {
                             // You can configure JwtDecoder or leave default
                         })
                 ) // optional
+                // Exception handling: return 401 instead of 302
+                /*.exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((exchange, ex) -> {
+                            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                            return exchange.getResponse().setComplete();
+                        })
+                )*/
                 .build();
     }
 

@@ -1,9 +1,16 @@
 server:
   port: 8080
+  address: www.myproject.local
+  reactive:
+    session:
+      cookie:
+        secure: false       # requires HTTPS in production. Note: secure: true requires HTTPS. For local dev, you may temporarily set secure: false.
+        http-only: true    # prevents JS access
+        domain: myproject.local
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka # Replace with your Eureka server address
+      defaultZone: http://www.myproject.local:8761/eureka # Replace with your Eureka server address
     fetchRegistry: true
     registerWithEureka: false # Gateway typically doesn't need to register itself if it's only consuming services
   instance:
@@ -15,6 +22,8 @@ spring:
     web-application-type: reactive
   cloud:
     gateway:
+      default-filters:
+        - TokenRelay
       routes:
         - id: fountation-user-service
           uri: lb://fountation-user-service # MY-SERVICE-ID is the application name of your microservice in Eureka
@@ -23,8 +32,23 @@ spring:
           filters:
             - RemoveRequestHeader=favicon.ico
             - RemoveRequestHeader=default-ui.css
-      default-filters:
-        - TokenRelay=
+      globalcors:
+        corsConfigurations:
+          '[/**]': # Apply CORS to all routes
+            allowedOrigins:
+              - "http://www.myproject.local:5173"  # Your frontend origin(s)
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - Content-Type
+              - Authorization
+              - X-Requested-With
+            allowCredentials: true
+            maxAge: 3600
   security:
     oauth2:
       client:
@@ -34,7 +58,7 @@ spring:
             client-id: XXXXXXXXXXXXXXXX # Must be registered in your Auth Server DB/config
             client-secret: XXXXXXXXXXXXXXXXXXXXXXXXXX  # Must match what's in your Auth Server DB/config
             authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:8080/login/oauth2/code/auth0
+            redirect-uri: http://www.myproject.local:8080/login/oauth2/code/auth0
             scope: openid,profile,email
             provider: auth0
             client-name: Auth0
