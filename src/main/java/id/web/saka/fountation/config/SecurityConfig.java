@@ -21,6 +21,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/health").permitAll()
                         .pathMatchers("/login").permitAll()
+                        .pathMatchers("/user/health").permitAll()
                         .pathMatchers("/user/registration/**").permitAll()
                         .pathMatchers("/oauth2/**").permitAll()
                         .pathMatchers("/public/**").permitAll()
@@ -35,7 +36,7 @@ public class SecurityConfig {
                                             .then(Mono.fromRunnable(() -> {
                                                 webFilterExchange.getExchange().getResponse()
                                                         .getHeaders()
-                                                        .setLocation(URI.create("/user/login/success"));
+                                                        .setLocation(URI.create("/user/login"));
                                             }));
                                 })
                 )
