@@ -19,12 +19,12 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/health").permitAll()
-                        .pathMatchers("/login").permitAll()
-                        .pathMatchers("/user/health").permitAll()
-                        .pathMatchers("/user/registration/**").permitAll()
-                        .pathMatchers("/oauth2/**").permitAll()
-                        .pathMatchers("/public/**").permitAll()
+                        .pathMatchers("/api/v0/health").permitAll()
+                        .pathMatchers("/api/v0/login").permitAll()
+                        .pathMatchers("/api/v0/user/health").permitAll()
+                        .pathMatchers("/api/v0/user/registration/**").permitAll()
+                        .pathMatchers("/api/v0/oauth2/**").permitAll()
+                        .pathMatchers("/api/v0/public/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .oauth2Login(
