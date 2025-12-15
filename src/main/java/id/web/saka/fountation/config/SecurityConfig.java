@@ -1,10 +1,12 @@
 package id.web.saka.fountation.config;
 
-
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 
@@ -18,7 +20,9 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(Customizer.withDefaults())
                 .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers("/api/v0/health").permitAll()
                         .pathMatchers("/api/v0/login").permitAll()
                         .pathMatchers("/api/v0/user/health").permitAll()
@@ -31,13 +35,12 @@ public class SecurityConfig {
                         oauth2 -> oauth2
                                 .loginPage("/oauth2/authorization/auth0")
                                 .authenticationSuccessHandler((webFilterExchange, authentication) -> {
-                                    return webFilterExchange.getExchange().getResponse()
-                                            .setComplete()
-                                            .then(Mono.fromRunnable(() -> {
-                                                webFilterExchange.getExchange().getResponse()
-                                                        .getHeaders()
-                                                        .setLocation(URI.create("/user/login"));
-                                            }));
+                                    webFilterExchange.getExchange().getResponse()
+                                            .setStatusCode(HttpStatus.FOUND);
+                                    webFilterExchange.getExchange().getResponse()
+                                            .getHeaders()
+                                            .setLocation(URI.create("/api/v0/user/login"));
+                                    return webFilterExchange.getExchange().getResponse().setComplete();
                                 })
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

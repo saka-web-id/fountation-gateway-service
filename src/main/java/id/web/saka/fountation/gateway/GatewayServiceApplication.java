@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "id.web.saka.fountation")
 public class GatewayServiceApplication {
 
     public static void main(String[] args) {
