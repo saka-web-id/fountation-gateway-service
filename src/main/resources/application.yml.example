@@ -1,20 +1,25 @@
 server:
   port: 8080
   address: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+  forward-headers-strategy: framework # Docker Important for correct handling of X-Forwarded-* headers when behind a reverse proxy or load balancer
   reactive:
     session:
       cookie:
-        secure: false       # requires HTTPS in production. Note: secure: true requires HTTPS. For local dev, you may temporarily set secure: false.
-        http-only: true    # prevents JS access
-        domain: myproject.local
+        secure: true        # requires HTTPS in production. Note: secure: true requires HTTPS. For local dev, you may temporarily set secure: false.
+        http-only: true     # prevents JS access
+        #domain: XXXXXXXXX  # Local use this
+        same-site: lax      # Adjust as needed (strict, lax, none)
+        path: /             # Ensure the cookie is sent for all paths
 eureka:
   client:
     serviceUrl:
       defaultZone: http://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC # Replace with your Eureka server address
     fetchRegistry: true
-    registerWithEureka: false # Gateway typically doesn't need to register itself if it's only consuming services
+    registerWithEureka: true # Gateway typically doesn't need to register itself if it's only consuming services
   instance:
-    preferIpAddress: true # Optional: prefer IP address over hostname for registration
+        prefer-ip-address: true               # Docker setup forces Eureka to use IP instead of hostname
+        ip-address: XXXXXXXXXXXX              # Docker setup forces Eureka to use IP instead of hostname
+        hostname: fountation-gateway-service  # Docker setup uses hostname for service registration, but prefer IP for communication
 spring:
   application:
     name: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -39,6 +44,7 @@ spring:
             - RemoveRequestHeader=default-ui.css
       default-filters:
         - TokenRelay=
+        - RemoveRequestHeader=Cookie
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -88,8 +94,7 @@ logging:
     org:
       springframework:
         security:
-          oauth2:
-            client: DEBUG
+          oauth2: DEBUG
         web:
           reactive:
             function:

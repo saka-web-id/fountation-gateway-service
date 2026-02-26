@@ -3,7 +3,6 @@ package id.web.saka.fountation.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
@@ -17,7 +16,7 @@ public class CorsGlobalConfig {
     public CorsWebFilter corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://www.myproject.local:5173"));
+        config.setAllowedOrigins(List.of("http://www.myproject.local:5173", "https://192.168.1.51"));
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);
@@ -25,7 +24,6 @@ public class CorsGlobalConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        
 
         return new CorsWebFilter(source);
     }
@@ -33,7 +31,7 @@ public class CorsGlobalConfig {
     @Bean
     public org.springframework.web.cors.reactive.CorsConfigurationSource springSecurityCorsSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("http://www.myproject.local:5173");
+        config.setAllowedOrigins(List.of("http://www.myproject.local:5173", "https://192.168.1.51"));
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);

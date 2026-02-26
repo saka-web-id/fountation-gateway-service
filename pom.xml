@@ -18,7 +18,7 @@
     <name>fountation-gateway-service</name>
 
     <properties>
-        <java.version>24</java.version>
+        <java.version>22</java.version>
         <spring-cloud.version>2024.0.2</spring-cloud.version>
     </properties>
 
