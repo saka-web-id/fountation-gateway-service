@@ -27,16 +27,22 @@ spring:
     web-application-type: reactive
   cloud:
     gateway:
+      httpclient:
+        pool:
+          max-idle-time: 10s
+          max-life-time: 60s
+        connect-timeout: 10000
+        response-timeout: 180s
       routes:
         - id: fountation-user-service
-          uri: lb://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC # MY-SERVICE-ID is the application name of your microservice in Eureka
+          uri: http://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC:8080 # MY-SERVICE-ID is the application name of your microservice in Docker Swarm or Kubernetes
           predicates:
             - Path=/user/** # Define the path predicate for this route
           filters:
             - RemoveRequestHeader=favicon.ico
             - RemoveRequestHeader=default-ui.css
-        - id: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-          uri: lb://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC # MY-SERVICE-ID is the application name of your microservice in Eureka
+        - id: fountation-account-service
+          uri: http://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC:8080 # MY-SERVICE-ID is the application name of your microservice in Docker Swarm or Kubernetes
           predicates:
             - Path=/account/** # Define the path predicate for this route
           filters:
