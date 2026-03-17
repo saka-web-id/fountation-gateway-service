@@ -12,6 +12,7 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class WebClientConfig {
@@ -19,20 +20,22 @@ public class WebClientConfig {
     @Bean
     public HttpClient httpClient() {
         ConnectionProvider provider = ConnectionProvider.builder("fountation-gateway-pool")
-                .maxIdleTime(Duration.ofSeconds(60)) // Increased from 20s
-                .maxLifeTime(Duration.ofMinutes(5))  // Increased from 1m to match Gateway
+                .maxConnections(500)
+                .pendingAcquireMaxCount(-1)
+                .pendingAcquireTimeout(Duration.ofSeconds(60))
+                .maxIdleTime(Duration.ofSeconds(20))
+                .maxLifeTime(Duration.ofMinutes(5))
                 .evictInBackground(Duration.ofSeconds(30))
-                .metrics(true) // Useful for Prometheus later!
+                .metrics(true)
                 .build();
 
         return HttpClient.create(provider)
-                //.protocol(reactor.netty.http.HttpProtocol.HTTP11) // TODO Testing in Home ISP only. remove when in production.
                 .resolver(DefaultAddressResolverGroup.INSTANCE)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000) // 10s connect timeout
-                .responseTimeout(Duration.ofMinutes(2))
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000)
+                .responseTimeout(Duration.ofSeconds(30))
                 .doOnConnected(conn ->
-                        conn.addHandlerLast(new ReadTimeoutHandler(10))
-                                .addHandlerLast(new WriteTimeoutHandler(10)));
+                        conn.addHandlerLast(new ReadTimeoutHandler(30, TimeUnit.SECONDS))
+                                .addHandlerLast(new WriteTimeoutHandler(30, TimeUnit.SECONDS)));
     }
 
     @Bean
