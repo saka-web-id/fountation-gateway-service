@@ -1,6 +1,4 @@
 server:
-  port: 8080
-  address: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
   forward-headers-strategy: framework # Docker Important for correct handling of X-Forwarded-* headers when behind a reverse proxy or load balancer
   reactive:
     session:
@@ -10,21 +8,11 @@ server:
         #domain: XXXXXXXXX  # Local use this
         same-site: lax      # Adjust as needed (strict, lax, none)
         path: /             # Ensure the cookie is sent for all paths
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC # Replace with your Eureka server address
-    fetchRegistry: true
-    registerWithEureka: true # Gateway typically doesn't need to register itself if it's only consuming services
-  instance:
-        prefer-ip-address: true               # Docker setup forces Eureka to use IP instead of hostname
-        ip-address: XXXXXXXXXXXX              # Docker setup forces Eureka to use IP instead of hostname
-        hostname: fountation-gateway-service  # Docker setup uses hostname for service registration, but prefer IP for communication
 spring:
   application:
-    name: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-  main:
-    web-application-type: reactive
+    name: fountation-gateway-service
+  config:
+    import: "optional:classpath:fountation-config.yaml"
   cloud:
     gateway:
       httpclient:
@@ -65,47 +53,3 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
             maxAge: 3600
-  security:
-    oauth2:
-      client:
-        registration:
-          # A unique identifier for your client registration (e.g., 'internal-auth-server')
-          auth0:
-            client-id: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC # Must be registered in your Auth Server DB/config
-            client-secret: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  # Must match what's in your Auth Server DB/config
-            authorization-grant-type: authorization_code
-            redirect-uri: http://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-            scope: openid,profile,email
-            provider: auth0
-            client-name: Auth0
-        provider:
-          # Matches the registration ID above
-          auth0:
-            # Point this to the base URL of your OWN Spring Authorization Server application
-            #issuer-uri: https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC/
-            authorization-uri: https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC?audience=https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-            token-uri: https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-            user-info-uri: https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-            jwk-set-uri: https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-            issuer-uri: https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC/
-      resource-server:
-        jwt:
-          # Spring Security automatically appends /.well-known/openid-configuration
-          # to this URI to discover the JWK set URI needed for validation
-          issuer-uri: https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC/
-          audiences:
-            - https://CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC/
-logging:
-  level:
-    org:
-      springframework:
-        security:
-          oauth2: DEBUG
-        web:
-          reactive:
-            function:
-              client:
-                ExchangeFunctions: DEBUG
-          server:
-            util:
-              matcher: INFO
